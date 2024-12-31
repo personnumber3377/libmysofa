@@ -12,7 +12,19 @@ if(FUZZ_BUILD)
   set(CMAKE_C_COMPILER "clang")
   set(CMAKE_CXX_COMPILER "clang")
   # Add sanitizer...
+  # Build the fuzzer.
+  
+  add_executable(fuzzer fuzzer/fuzzer.c)
+  #target_compile_options(fuzzer PUBLIC -g -fsanitize=address,undefined,fuzzer)
   target_compile_options(internal PUBLIC -fsanitize=address,undefined)
+  target_link_libraries(fuzzer mysofa-static)
+  install(
+    TARGETS fuzzer
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+  
 endif(FUZZ_BUILD)
 
 if(NOT MSVC)
@@ -245,18 +257,9 @@ if(BUILD_TESTS)
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(BUILD_TESTS)
 
-if(FUZZ_BUILD)
-  # Build the fuzzer.
-  target_compile_options(internal PUBLIC -g -fsanitize=address,undefined,fuzzer)
-  add_executable(fuzzer fuzzer/fuzzer.c)
-  target_link_libraries(fuzzer mysofa-static)
-  install(
-    TARGETS fuzzer
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+#if(FUZZ_BUILD)
 
-endif(FUZZ_BUILD)
+#endif(FUZZ_BUILD)
 
 set(PKG_CONFIG_PRIVATELIBS
     "${PKG_CONFIG_PRIVATELIBS}"
