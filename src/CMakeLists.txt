@@ -16,7 +16,8 @@ if(FUZZ_BUILD)
   
   add_executable(fuzzer fuzzer/fuzzer.c)
   #target_compile_options(fuzzer PUBLIC -g -fsanitize=address,undefined,fuzzer)
-  target_compile_options(internal PUBLIC -fsanitize=address,undefined)
+  target_compile_options(fuzzer PUBLIC -fsanitize=address,undefined,fuzzer)
+  target_link_options(fuzzer PUBLIC -fsanitize=address,undefined,fuzzer)
   target_link_libraries(fuzzer mysofa-static)
   install(
     TARGETS fuzzer
