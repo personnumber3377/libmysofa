@@ -3,6 +3,18 @@ set(CMAKE_C_STANDARD 99)
 configure_file(config.h.in config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+# Check for fuzzing configuration...
+
+if(FUZZ_BUILD)
+  # Fuzz build...
+  set(BUILD_SHARED_LIBS 1) # We need to build static libraries.
+  # Now set the compiler to clang
+  set(CMAKE_C_COMPILER "clang")
+  set(CMAKE_CXX_COMPILER "clang")
+  # Add sanitizer...
+  target_compile_options(internal PUBLIC -fsanitize=address,undefined)
+endif(FUZZ_BUILD)
+
 if(NOT MSVC)
   if(NOT WIN32)
     find_library(MATH m)
@@ -232,6 +244,19 @@ if(BUILD_TESTS)
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(BUILD_TESTS)
+
+if(FUZZ_BUILD)
+  # Build the fuzzer.
+  target_compile_options(internal PUBLIC -g -fsanitize=address,undefined,fuzzer)
+  add_executable(fuzzer fuzzer/fuzzer.c)
+  target_link_libraries(fuzzer mysofa-static)
+  install(
+    TARGETS fuzzer
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+endif(FUZZ_BUILD)
 
 set(PKG_CONFIG_PRIVATELIBS
     "${PKG_CONFIG_PRIVATELIBS}"
